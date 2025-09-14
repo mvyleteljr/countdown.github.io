@@ -55,3 +55,6 @@ const Auth = (function(){
 
   return { getUser, login, logout, isValidUser };
 })();
+
+// Ensure global visibility for other scripts that check window.Auth
+try { window.Auth = Auth; } catch (_) {}

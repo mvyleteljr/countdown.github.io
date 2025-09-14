@@ -12,13 +12,27 @@
     try {
       var u = document.getElementById('username').value;
       var p = document.getElementById('password').value;
-      var ok = (window.Auth && Auth.login && Auth.login(u, p)) || false;
-      if (ok) {
-        status.textContent = 'Signed in! Redirecting…';
-        var next = getNext();
-        setTimeout(function(){ window.location.href = next; }, 150);
+      var ok = false;
+      if (window.Auth && Auth.login) {
+        ok = Auth.login(u, p);
       } else {
-        status.textContent = 'Invalid password. Please try again.';
+        // Fallback if auth.js failed to load
+        var USERS = { 'Marshall': 'marsh-123', 'Isobel': 'iso-123' };
+        if (USERS.hasOwnProperty(u) && String(p).trim() === USERS[u]) {
+          try { localStorage.setItem('auth.user', u); } catch(_){}
+          ok = true;
+        }
+      }
+      if (ok) {
+        var next = getNext();
+        var target = new URL(next, location.href).toString();
+        status.innerHTML = 'Signed in! Redirecting… <a id="redirectLink" class="download" href="' + target + '">Continue</a>';
+        setTimeout(function(){
+          try { window.location.replace(target); }
+          catch(_) { try { window.location.href = target; } catch(_){} }
+        }, 100);
+      } else {
+        status.textContent = (window.Auth ? 'Invalid password. Please try again.' : 'Auth not loaded; using fallback. Invalid credentials.');
       }
     } catch (e) {
       status.textContent = 'Sign-in failed.';
@@ -49,4 +63,3 @@
     init();
   }
 })();
-

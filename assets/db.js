@@ -50,10 +50,15 @@ async function addNote({ user, text, files }) {
   }
   const now = new Date();
   const todayKey = Utils.toDateKey(now);
-  // Enforce single note per user per day
-  const existing = await getLatestNoteForToday(user);
-  if (existing && existing.dateKey === todayKey) {
-    throw new Error('note-exists-today');
+  // Enforce max two entries per user per day (original + one edit)
+  try {
+    const existingToday = await getTodayNotes(user);
+    if (existingToday.length >= 2) {
+      throw new Error('edit-limit-reached');
+    }
+  } catch (e) {
+    if (e && e.message === 'edit-limit-reached') throw e;
+    // If counting failed (e.g., IndexedDB open fail), continue best-effort
   }
   const attachments = files ? await Promise.all(Array.from(files).map(async (file) => {
     // Store as Blob when using IDB; in fallback we skip to keep it simple
@@ -117,10 +122,51 @@ async function getLatestNoteForToday(user) {
   return all.find(n => n.dateKey === todayKey && n.user === user) || null;
 }
 
+async function getTodayNotes(user) {
+  const all = await getAllNotes();
+  const todayKey = Utils.toDateKey(new Date());
+  const arr = all.filter(n => n.dateKey === todayKey && n.user === user);
+  // getAllNotes returns sorted desc by timestamp; keep that order
+  return arr;
+}
+
 async function getNotesExcludingToday() {
   const all = await getAllNotes();
   const todayKey = Utils.toDateKey(new Date());
   return all.filter(n => n.dateKey !== todayKey);
+}
+
+async function clearTodayNotes() {
+  const todayKey = Utils.toDateKey(new Date());
+  // Try IndexedDB path first
+  try {
+    const db = await openDB();
+    await new Promise((resolve, reject) => {
+      const tx = db.transaction(STORE, 'readwrite');
+      const store = tx.objectStore(STORE);
+      const idx = store.index('by_dateKey');
+      const range = IDBKeyRange.only(todayKey);
+      const req = idx.openCursor(range);
+      req.onsuccess = (e) => {
+        const cursor = e.target.result;
+        if (cursor) {
+          store.delete(cursor.primaryKey);
+          cursor.continue();
+        } else {
+          resolve();
+        }
+      };
+      req.onerror = () => reject(req.error);
+    });
+    return true;
+  } catch (e) {
+    // Fallback to localStorage array
+    USE_LS_FALLBACK = true;
+    const arr = lsRead();
+    const filtered = arr.filter(n => n.dateKey !== todayKey);
+    lsWrite(filtered);
+    return true;
+  }
 }
 
 function clearAll() {
@@ -136,4 +182,4 @@ function clearAll() {
   });
 }
 
-window.DB = { addNote, getAllNotes, getLatestNoteForToday, getNotesExcludingToday, clearAll };
+window.DB = { addNote, getAllNotes, getLatestNoteForToday, getTodayNotes, getNotesExcludingToday, clearTodayNotes, clearAll };
