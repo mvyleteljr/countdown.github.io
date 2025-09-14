@@ -25,7 +25,14 @@ Edit `assets/config.js`:
 
 ## Environment Variables
 
-- `DATABASE_URL` (required): Postgres connection string.
+- Database URL (required): set ONE of the following to your Postgres connection string (Vercel Postgres/Neon integration typically exposes these):
+  - `DATABASE_URL`
+  - `POSTGRES_URL`
+  - `POSTGRES_URL_NON_POOLING` (preferred for serverless clients)
+  - `POSTGRES_PRISMA_URL`
+  - `DATABASE_URL_UNPOOLED`
+  - `NEON_DATABASE_URL`
+  - `PG_CONNECTION_STRING`
 - `API_SECRET` (optional): enables write/delete protection. When set, client must send header `X-Token: <API_SECRET>`. The frontend will include it automatically if `assets/config.js` sets `apiSecret`.
 
 ## Local Development
@@ -44,7 +51,7 @@ Notes are limited to one edit (two rows max) per user per day.
 
 ## Troubleshooting
 
-- 500 missing database URL: set `DATABASE_URL` in Vercel envs and redeploy.
+- 500 missing database URL: set one of the supported DB env vars (above) in the correct environment (Production/Preview) and redeploy.
 - Writes failing with 401: set matching `API_SECRET` (server) and `apiSecret` (client).
 - Frontend flicker: `autoRefreshMs` is `0` by default. If enabling, the UI skips updates while editing and only re-renders on changes.
 

@@ -15,12 +15,14 @@ function send(res, status, body, extraHeaders = {}) {
 
 function unauthorized(res) { send(res, 401, { ok: false, error: 'unauthorized' }); }
 
-// Resolve DB URL once
+// Resolve DB URL once (support common provider names)
 const dbUrl = process.env.DATABASE_URL
   || process.env.POSTGRES_URL
   || process.env.POSTGRES_PRISMA_URL
   || process.env.DATABASE_URL_UNPOOLED
-  || process.env.POSTGRES_URL_NON_POOLING;
+  || process.env.POSTGRES_URL_NON_POOLING
+  || process.env.NEON_DATABASE_URL
+  || process.env.PG_CONNECTION_STRING;
 const client = dbUrl ? neon(dbUrl) : null;
 
 async function readJsonBody(req) {
@@ -71,7 +73,13 @@ export default async function handler(req, res) {
 
   const token = process.env.API_SECRET || '';
   const requireSecret = !!token;
-  if (!client) return send(res, 500, { ok:false, error:'missing-database-url' });
+  if (!client) {
+    return send(res, 500, {
+      ok: false,
+      error: 'missing-database-url',
+      hint: 'Set one of: DATABASE_URL, POSTGRES_URL, POSTGRES_URL_NON_POOLING, POSTGRES_PRISMA_URL, DATABASE_URL_UNPOOLED, NEON_DATABASE_URL, or PG_CONNECTION_STRING (then redeploy).'
+    });
+  }
 
   // Schema is ensured at module load
 
