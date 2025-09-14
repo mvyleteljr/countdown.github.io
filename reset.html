@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Reset Notes</title>
+    <link rel="stylesheet" href="assets/styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <h1>Reset Notes</h1>
+      <nav>
+        <a href="index.html">Home</a>
+        <a href="log.html">Log</a>
+      </nav>
+    </header>
+    <main class="container">
+      <section class="note-card" style="max-width:560px">
+        <p>This will erase all saved notes from this browser (IndexedDB/localStorage) and sign you out.</p>
+        <button id="eraseBtn" class="btn">Erase all notes</button>
+        <div id="eraseStatus" class="status" style="margin-top:10px"></div>
+      </section>
+    </main>
+    <footer class="site-footer">
+      <small>Local-only reset. No data is sent anywhere.</small>
+    </footer>
+
+    <script src="assets/utils.js"></script>
+    <script src="assets/auth.js"></script>
+    <script src="assets/db.js"></script>
+    <script>
+      (function(){
+        const btn = document.getElementById('eraseBtn');
+        const status = document.getElementById('eraseStatus');
+        btn.addEventListener('click', async () => {
+          btn.disabled = true;
+          status.textContent = 'Erasing…';
+          try {
+            await DB.clearAll();
+            try { Auth.logout(); } catch(_){}
+            status.textContent = 'All notes cleared. Redirecting…';
+            setTimeout(() => { window.location.href = 'index.html'; }, 600);
+          } catch (e) {
+            status.textContent = 'Failed to erase. You can also clear site data in your browser settings.';
+            btn.disabled = false;
+          }
+        });
+      })();
+    </script>
+  </body>
+  </html>
+

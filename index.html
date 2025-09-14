@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Countdown to October 12</title>
+    <link rel="stylesheet" href="assets/styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <h1>Countdown to October 12</h1>
+      <nav>
+        <a href="index.html" aria-current="page">Home</a>
+        <a href="log.html">Log</a>
+        <a href="sign-in.html">Sign In</a>
+      </nav>
+      <div id="userStatus" class="muted" style="margin-left:auto"></div>
+    </header>
+
+    <main class="container">
+      <section class="countdown" aria-live="polite">
+        <div id="countdown" class="countdown-display">Loading…</div>
+        <div class="target-date" id="targetDate"></div>
+      </section>
+
+      <section class="todays-note">
+        <h2>Today's Notes</h2>
+
+        <div class="two-col">
+          <div class="note-card" data-user="Marshall">
+            <h3>Marshall</h3>
+            <div class="note-today-display">
+              <div id="todayNote-Marshall"></div>
+            </div>
+            <div id="noteMessage-Marshall" class="muted"></div>
+            <form id="noteForm-Marshall" class="note-form" onsubmit="return false;">
+              <label class="field">
+                <span>Write your thought</span>
+                <textarea id="noteText-Marshall" placeholder="What’s on your mind today?" rows="3"></textarea>
+              </label>
+              <label class="field">
+                <span>Attach files (optional)</span>
+                <input id="noteFiles-Marshall" type="file" multiple />
+              </label>
+              <button id="saveBtn-Marshall" type="button" class="btn" onclick="App && App.save && App.save('Marshall')">Save Note</button>
+              <div id="saveStatus-Marshall" class="status" role="status" aria-live="polite"></div>
+            </form>
+          </div>
+
+          <div class="note-card" data-user="Isobel">
+            <h3>Isobel</h3>
+            <div class="note-today-display">
+              <div id="todayNote-Isobel"></div>
+            </div>
+            <div id="noteMessage-Isobel" class="muted"></div>
+            <form id="noteForm-Isobel" class="note-form" onsubmit="return false;">
+              <label class="field">
+                <span>Write your thought</span>
+                <textarea id="noteText-Isobel" placeholder="What’s on your mind today?" rows="3"></textarea>
+              </label>
+              <label class="field">
+                <span>Attach files (optional)</span>
+                <input id="noteFiles-Isobel" type="file" multiple />
+              </label>
+              <button id="saveBtn-Isobel" type="button" class="btn" onclick="App && App.save && App.save('Isobel')">Save Note</button>
+              <div id="saveStatus-Isobel" class="status" role="status" aria-live="polite"></div>
+            </form>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <small>Simple, local-first notes. Nothing leaves your browser.</small>
+    </footer>
+
+    <script src="assets/utils.js"></script>
+    <script src="assets/auth.js"></script>
+    <script src="assets/guard.js"></script>
+    <script src="assets/db.js"></script>
+    <script src="assets/countdown.js"></script>
+    <script src="assets/app.js"></script>
+  </body>
+  </html>

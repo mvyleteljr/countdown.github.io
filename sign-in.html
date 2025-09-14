@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Sign In</title>
+    <link rel="stylesheet" href="assets/styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <h1>Sign In</h1>
+      <nav>
+        <a href="index.html">Home</a>
+        <a href="log.html">Log</a>
+      </nav>
+    </header>
+
+    <main class="container">
+      <section class="note-card" style="max-width:520px">
+        <form id="signinForm" class="note-form" onsubmit="return false;">
+          <label class="field">
+            <span>User</span>
+            <select id="username">
+              <option value="Marshall">Marshall</option>
+              <option value="Isobel">Isobel</option>
+            </select>
+          </label>
+          <label class="field">
+            <span>Password</span>
+            <input id="password" type="password" placeholder="Enter password" />
+          </label>
+          <button type="submit" class="btn">Sign In</button>
+          <div id="signinStatus" class="status" role="status" aria-live="polite"></div>
+        </form>
+        <p class="muted">This is a simple local sign-in for two users only.</p>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <small>Local-only auth. Change passwords in <code>assets/auth.js</code>.</small>
+    </footer>
+
+    <script src="assets/auth.js"></script>
+    <script>
+      (function(){
+        const form = document.getElementById('signinForm');
+        const status = document.getElementById('signinStatus');
+        function getNext() {
+          try {
+            const p = new URLSearchParams(location.search);
+            const n = p.get('next');
+            return n || 'index.html';
+          } catch(_) { return 'index.html'; }
+        }
+        form.addEventListener('submit', (e) => {
+          e.preventDefault();
+          const u = document.getElementById('username').value;
+          const p = document.getElementById('password').value;
+          const ok = Auth.login(u, p);
+          if (ok) {
+            status.textContent = 'Signed in! Redirecting…';
+            const next = getNext();
+            setTimeout(() => { window.location.href = next; }, 300);
+          } else {
+            status.textContent = 'Invalid password. Please try again.';
+          }
+        });
+      })();
+    </script>
+  </body>
+  </html>
