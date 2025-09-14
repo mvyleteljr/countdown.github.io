@@ -14,7 +14,7 @@ const Auth = (function(){
 
   function login(username, password) {
     if (!isValidUser(username)) return false;
-    const ok = USERS[username] === String(password);
+    const ok = USERS[username] === String(password).trim();
     if (ok) localStorage.setItem(STORAGE_KEY, username);
     return ok;
   }
@@ -40,7 +40,7 @@ const Auth = (function(){
       el.append(span, sep, a);
     } else {
       const a = document.createElement('a');
-      a.href = 'sign-in.html';
+      a.href = './sign-in.html';
       a.textContent = 'Sign in';
       el.appendChild(a);
     }
@@ -55,4 +55,3 @@ const Auth = (function(){
 
   return { getUser, login, logout, isValidUser };
 })();
-
