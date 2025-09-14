@@ -25,12 +25,14 @@
     </main>
 
     <footer class="site-footer">
-      <small>Stored locally in your browser via IndexedDB.</small>
+      <small>Backed by Postgres (Neon) via Vercel.</small>
     </footer>
 
     <script src="./assets/utils.js"></script>
     <script src="./assets/auth.js"></script>
-    <script src="./assets/db.js"></script>
+    <!-- Load config before remote DB so apiBase/apiSecret are applied -->
+    <script src="./assets/config.js"></script>
+    <script src="./assets/remote-db.js"></script>
     <script src="./assets/log.js"></script>
   </body>
   </html>

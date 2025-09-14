@@ -34,8 +34,9 @@ const Auth = (function(){
       a.addEventListener('click', (e) => {
         e.preventDefault();
         logout();
-        // If on index, forms will adapt on reload; stay on page
-        window.location.reload();
+        // Update header and notify listeners without reloading
+        try { renderHeaderStatus(); } catch (_) {}
+        try { window.dispatchEvent(new Event('auth-changed')); } catch (_) {}
       });
       el.append(span, sep, a);
     } else {

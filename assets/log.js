@@ -77,9 +77,7 @@
     }
   }
 
-  function start() {
-    refreshLog();
-  }
+  async function start() { refreshLog(); }
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', start);

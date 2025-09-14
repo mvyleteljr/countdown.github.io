@@ -2,6 +2,10 @@
 (function(){
   function el(id) { return document.getElementById(id); }
   const USERS = ['Marshall', 'Isobel'];
+  const AUTO_REFRESH_MS = (window.Config && typeof Config.autoRefreshMs === 'number') ? Config.autoRefreshMs : 5000;
+
+  // Track last-rendered signature per user to avoid unnecessary DOM updates
+  const LastSig = Object.create(null);
 
   function renderNote(container, note) {
     container.innerHTML = '';
@@ -57,13 +61,35 @@
     container.appendChild(card);
   }
 
-  async function refreshTodayFor(user) {
+  async function refreshTodayFor(user, opts) {
     try {
       const notes = await DB.getTodayNotes(user);
       const latest = notes && notes.length ? notes[0] : null;
-      renderNote(el(`todayNote-${user}`), latest);
-      renderHistory(el(`todayHistory-${user}`), notes ? notes.slice(1) : []);
-      updateEditorState(user, latest, notes ? notes.length : 0);
+      const count = notes ? notes.length : 0;
+
+      // Skip updates if user is actively editing (focused inside their form)
+      const form = el(`noteForm-${user}`);
+      const active = document.activeElement;
+      const editing = !!(form && active && form.contains(active));
+
+      // Build a light signature to detect meaningful changes
+      const sig = JSON.stringify({
+        latestTs: latest ? latest.timestamp : 0,
+        latestText: latest && typeof latest.text === 'string' ? latest.text : '',
+        histCount: Math.max(0, count - 1)
+      });
+
+      // Only re-render when content changed and not editing
+      const changed = LastSig[user] !== sig;
+      const force = !!(opts && opts.force);
+      if (changed && (!editing || force)) {
+        renderNote(el(`todayNote-${user}`), latest);
+        renderHistory(el(`todayHistory-${user}`), notes ? notes.slice(1) : []);
+        LastSig[user] = sig;
+      }
+
+      // Always reconcile editor state (cheap and avoids stale messaging)
+      updateEditorState(user, latest, count);
     } catch (e) {
       const msg = el(`noteMessage-${user}`);
       msg.textContent = 'Storage unavailable. Notes will not persist in this browser.';
@@ -139,17 +165,17 @@
       try {
         const text = el(`noteText-${user}`).value;
         const files = el(`noteFiles-${user}`).files;
-        await DB.addNote({ user, text, files });
+        const saved = await DB.addNote({ user, text, files });
         // Keep text; clear attachments input only
         el(`noteFiles-${user}`).value = '';
         status.textContent = 'Saved!';
-        await refreshTodayFor(user);
+        await refreshTodayFor(user, { force: true });
         setTimeout(() => status.textContent = '', 2000);
       } catch (err) {
         console.error(err);
         if (String(err && err.message) === 'edit-limit-reached') {
           status.textContent = "You've already used your one edit for today.";
-          await refreshTodayFor(user);
+          await refreshTodayFor(user, { force: true });
         } else {
           status.textContent = 'Failed to save note: ' + (err && err.message || 'unknown error');
         }
@@ -209,6 +235,20 @@
       const handler = onSubmitFactory(user);
       return handler();
     };
+
+    // React to auth changes without reloading the page
+    window.addEventListener('auth-changed', () => {
+      for (const u of USERS) refreshTodayFor(u);
+    });
+
+    // Periodically refresh to reflect edits from others (configurable)
+    if (AUTO_REFRESH_MS > 0) {
+      const tick = () => {
+        if (document.visibilityState !== 'visible') return; // avoid hidden tab churn
+        for (const u of USERS) refreshTodayFor(u);
+      };
+      setInterval(tick, AUTO_REFRESH_MS);
+    }
   }
 
   if (document.readyState === 'loading') {
