@@ -53,4 +53,4 @@ Notes are limited to one edit (two rows max) per user per day.
 - `index.html`, `log.html`, `reset.html`, `sign-in.html` — static pages.
 - `assets/*` — frontend scripts and styles. Configure in `assets/config.js`.
 - `api/notes.mjs` — Vercel Serverless Function (Node.js runtime) that talks to Postgres via Neon.
-Trigger rebuild ignore
+Triggering rebuild
