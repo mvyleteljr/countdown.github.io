@@ -173,8 +173,8 @@
         setTimeout(() => status.textContent = '', 2000);
       } catch (err) {
         console.error(err);
-        if (String(err && err.message) === 'edit-limit-reached') {
-          status.textContent = "You've already used your one edit for today.";
+        if (String(err && err.message) === 'daily-limit-reached') {
+          status.textContent = "You've already posted today.";
           await refreshTodayFor(user, { force: true });
         } else {
           status.textContent = 'Failed to save note: ' + (err && err.message || 'unknown error');
@@ -199,14 +199,14 @@
       msg.textContent = `Signed in as ${current}. Only ${user} can post here.`;
       return;
     }
-    if (count >= 2) {
+    if (count >= 1) {
       form.style.display = 'none';
-      msg.textContent = "You've used your one edit for today.";
+      msg.textContent = "You've already posted today.";
       return;
     }
     // Allow editing; prefill latest text if present
     form.style.display = '';
-    msg.textContent = count === 1 ? 'You can make one edit today.' : '';
+    msg.textContent = count === 0 ? 'You can post once today.' : '';
     if (note) {
       const input = el(`noteText-${user}`);
       if (input && input.value === '') {

@@ -99,9 +99,9 @@ export default async function handler(req, res) {
     const text = typeof payload.text === 'string' ? payload.text : '';
     const attachments = Array.isArray(payload.attachments) ? payload.attachments : [];
     if (!user) return send(res, 400, { ok:false, error:'user-required' });
-    // Enforce one edit max: allow at most 2 per user per dateKey
+    // Enforce one post per day: allow at most 1 per user per dateKey
     const count = await client`select count(*)::int as c from notes where user_name = ${user} and date_key = ${dateKey}`;
-    if (count[0].c >= 2) return send(res, 400, { ok:false, error:'edit-limit-reached' });
+    if (count[0].c >= 1) return send(res, 400, { ok:false, error:'daily-limit-reached' });
     const rows = await client`
       insert into notes (user_name, "timestamp", date_key, "text", attachments)
       values (${user}, ${ts}, ${dateKey}, ${text}, ${JSON.stringify(attachments)}::jsonb)
