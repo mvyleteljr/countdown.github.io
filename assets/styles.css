@@ -63,6 +63,9 @@ nav a[aria-current="page"] { font-weight: 600; }
 }
 
 .todays-note h2 { margin-top: 0; }
+.prompts h2 { margin-top: 16px; }
+.answers h2 { margin-top: 16px; }
+.answers-reveal h2 { margin-top: 16px; }
 .note-form {
   display: grid;
   gap: 12px;
@@ -97,6 +100,7 @@ input[type="file"] {
 }
 .btn:hover { filter: brightness(0.95); }
 .btn:active { transform: translateY(1px); }
+.btn-small { padding: 8px 14px; font-size: 0.9rem; }
 
 .status { color: var(--accent); min-height: 1.2em; }
 .muted { color: var(--muted); }
@@ -131,6 +135,25 @@ input[type="file"] {
 }
 
 .note-card h3 { margin-top: 0; margin-bottom: 8px; }
+
+.prompt-list { display: grid; gap: 12px; }
+.prompt-item .field { margin-bottom: 0; }
+.prompt-item textarea { min-height: 64px; }
+.prompt-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.prompt-display { margin: 12px 0; padding: 12px 14px; background: rgba(0,0,0,0.03); border-radius: 8px; border: 1px solid var(--border); }
+.prompt-label { font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); margin-bottom: 6px; }
+.prompt-display blockquote { margin: 0; font-style: italic; white-space: pre-wrap; }
+.prompt-answer { width: 100%; margin-bottom: 8px; }
+.reveal-list { display: grid; gap: 12px; }
+.reveal-item { border-top: 1px solid var(--border); padding-top: 10px; }
+.reveal-item:first-child { border-top: none; padding-top: 0; }
+.reveal-meta { font-size: 0.85rem; color: var(--muted); margin-bottom: 6px; }
+.reveal-prompt { font-style: italic; margin-bottom: 6px; white-space: pre-wrap; }
+.reveal-answer { white-space: pre-wrap; }
 
 @media (prefers-color-scheme: dark) {
   :root {

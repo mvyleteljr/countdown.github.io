@@ -70,6 +70,57 @@
           </div>
         </div>
       </section>
+
+      <section class="prompts" id="promptsSection">
+        <h2>Secret Prompt Drafts</h2>
+        <div class="two-col">
+          <div class="note-card" data-user="Marshall">
+            <h3>Marshall</h3>
+            <div id="promptMessage-Marshall" class="muted"></div>
+            <div id="promptList-Marshall" class="prompt-list"></div>
+          </div>
+
+          <div class="note-card" data-user="Isobel">
+            <h3>Isobel</h3>
+            <div id="promptMessage-Isobel" class="muted"></div>
+            <div id="promptList-Isobel" class="prompt-list"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="answers" id="answersSection" style="display:none">
+        <h2>Daily Prompt Exchange</h2>
+        <div class="two-col">
+          <div class="note-card" data-user="Marshall" id="answerCard-Marshall">
+            <h3>Marshall</h3>
+            <div id="answerMessage-Marshall" class="muted"></div>
+            <div id="answerPrompt-Marshall" class="prompt-display">
+              <div class="prompt-label">Today's prompt from Isobel</div>
+              <blockquote id="answerPromptText-Marshall"></blockquote>
+            </div>
+            <textarea id="answerTextarea-Marshall" class="prompt-answer" rows="4" placeholder="Write your reflection here…"></textarea>
+            <div class="prompt-actions">
+              <button id="answerSave-Marshall" type="button" class="btn btn-small">Save Answer</button>
+              <div id="answerStatus-Marshall" class="status" role="status" aria-live="polite"></div>
+            </div>
+          </div>
+
+          <div class="note-card" data-user="Isobel" id="answerCard-Isobel">
+            <h3>Isobel</h3>
+            <div id="answerMessage-Isobel" class="muted"></div>
+            <div id="answerPrompt-Isobel" class="prompt-display">
+              <div class="prompt-label">Today's prompt from Marshall</div>
+              <blockquote id="answerPromptText-Isobel"></blockquote>
+            </div>
+            <textarea id="answerTextarea-Isobel" class="prompt-answer" rows="4" placeholder="Write your reflection here…"></textarea>
+            <div class="prompt-actions">
+              <button id="answerSave-Isobel" type="button" class="btn btn-small">Save Answer</button>
+              <div id="answerStatus-Isobel" class="status" role="status" aria-live="polite"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
     </main>
 
     <footer class="site-footer">
@@ -83,6 +134,8 @@
     <script src="./assets/config.js"></script>
     <script src="./assets/remote-db.js"></script>
     <script src="./assets/countdown.js"></script>
+    <script src="./assets/prompts.js"></script>
+    <script src="./assets/answers.js"></script>
     <script src="./assets/app.js"></script>
   </body>
-  </html>
+</html>

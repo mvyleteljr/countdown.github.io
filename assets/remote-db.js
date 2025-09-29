@@ -7,11 +7,23 @@
     return String(v).replace(/\/$/, '');
   }
 
-  function headers(json) {
+  function headers(json, opts) {
     const h = {};
     if (json) h['Content-Type'] = 'application/json';
     if (window.Config && Config.apiSecret) h['X-Token'] = String(Config.apiSecret);
+    if (opts && opts.viewer) h['X-Viewer'] = opts.viewer;
     return h;
+  }
+
+  function currentUser() {
+    try {
+      if (window.Auth && typeof Auth.getUser === 'function') {
+        return Auth.getUser();
+      }
+    } catch (_) {
+      /* ignore */
+    }
+    return null;
   }
 
   async function addNote({ user, text, files }) {
@@ -95,5 +107,127 @@
     return true;
   }
 
-  window.DB = { addNote, getAllNotes, getLatestNoteForToday, getTodayNotes, getNotesExcludingToday, clearTodayNotes, clearAll };
+  async function getPromptsForUser(user) {
+    const viewer = currentUser();
+    if (!viewer || viewer !== user) throw new Error('unauthorized');
+    const url = (base() || '') + '/api/prompts?user=' + encodeURIComponent(user);
+    const res = await fetch(url, { headers: headers(false, { viewer }) });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      const err = new Error((data && data.error) || 'prompts-read-failed');
+      err.code = data && data.error;
+      throw err;
+    }
+    const prompts = Array.isArray(data.prompts) ? data.prompts : [];
+    return {
+      prompts,
+      editable: !!(data && data.editable),
+      dateKey: data && data.dateKey,
+      hasAny: !!(data && data.hasAny)
+    };
+  }
+
+  async function savePromptsForUser(user, prompts) {
+    const viewer = currentUser();
+    if (!viewer || viewer !== user) throw new Error('unauthorized');
+    const url = (base() || '') + '/api/prompts';
+    const rows = Array.isArray(prompts) ? prompts : [];
+    const body = { user, prompts: rows, dateKey: Utils.toDateKey(new Date()) };
+    const res = await fetch(url, { method: 'POST', headers: headers(true, { viewer }), body: JSON.stringify(body) });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      const err = new Error((data && data.error) || 'prompts-save-failed');
+      err.code = data && data.error;
+      throw err;
+    }
+    return {
+      prompts: Array.isArray(data.prompts) ? data.prompts : [],
+      dateKey: data.dateKey
+    };
+  }
+
+  async function clearPrompts(scope, user) {
+    const params = new URLSearchParams();
+    const mode = (scope || 'all').toLowerCase();
+    params.set('scope', mode);
+    if (mode === 'user' && user) params.set('user', user);
+    const url = (base() || '') + '/api/prompts?' + params.toString();
+    const res = await fetch(url, { method: 'DELETE', headers: headers(false) });
+    if (!res.ok) throw new Error('prompts-clear-failed');
+    return true;
+  }
+
+  async function getDailyPrompt(user) {
+    const viewer = currentUser();
+    if (!viewer || viewer !== user) throw new Error('unauthorized');
+    const url = (base() || '') + '/api/prompt-answers?user=' + encodeURIComponent(user);
+    const res = await fetch(url, { headers: headers(false, { viewer }) });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      const err = new Error((data && data.error) || 'daily-prompt-failed');
+      err.code = data && data.error;
+      throw err;
+    }
+    return data;
+  }
+
+  async function savePromptAnswer(user, answerText) {
+    const viewer = currentUser();
+    if (!viewer || viewer !== user) throw new Error('unauthorized');
+    const url = (base() || '') + '/api/prompt-answers';
+    const body = { user, answerText }; // include viewer date server side
+    const res = await fetch(url, { method: 'POST', headers: headers(true, { viewer }), body: JSON.stringify(body) });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      const err = new Error((data && data.error) || 'prompt-answer-save-failed');
+      err.code = data && data.error;
+      throw err;
+    }
+    return data;
+  }
+
+  async function clearPromptAnswers(scope, user) {
+    const params = new URLSearchParams();
+    const mode = (scope || 'all').toLowerCase();
+    params.set('scope', mode);
+    if (mode === 'user' && user) params.set('user', user);
+    const url = (base() || '') + '/api/prompt-answers?' + params.toString();
+    const res = await fetch(url, { method: 'DELETE', headers: headers(false) });
+    if (!res.ok) throw new Error('prompt-answers-clear-failed');
+    return true;
+  }
+
+  async function getRevealAnswers(user) {
+    const viewer = currentUser();
+    if (!viewer || viewer !== user) throw new Error('unauthorized');
+    const params = new URLSearchParams();
+    params.set('user', user);
+    params.set('mode', 'reveal');
+    const url = (base() || '') + '/api/prompt-answers?' + params.toString();
+    const res = await fetch(url, { headers: headers(false, { viewer }) });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      const err = new Error((data && data.error) || 'prompt-reveal-failed');
+      err.code = data && data.error;
+      throw err;
+    }
+    return data;
+  }
+
+  window.DB = {
+    addNote,
+    getAllNotes,
+    getLatestNoteForToday,
+    getTodayNotes,
+    getNotesExcludingToday,
+    clearTodayNotes,
+    clearAll,
+    getPromptsForUser,
+    savePromptsForUser,
+    clearPrompts,
+    getDailyPrompt,
+    savePromptAnswer,
+    clearPromptAnswers,
+    getRevealAnswers
+  };
 })();
